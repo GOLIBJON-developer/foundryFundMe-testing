@@ -9,7 +9,7 @@ contract CounterScript is Script {
 
     function setUp() public {}
 
-    function run() public {
+    function run() external {
         vm.startBroadcast();
 
         fundMe = new FundMe();

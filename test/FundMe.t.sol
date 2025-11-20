@@ -6,18 +6,20 @@ import {FundMe} from "../src/FundMe.sol";
 
 contract CounterTest is Test {
     FundMe public fundMe;
-    uint256 number = 1;
 
     function setUp() public {
         fundMe = new FundMe();
     }
 
-    // function test_Increment() public {
-    //     fundMe.increment();
-    //     assertEq(fundMe.number(), 1);
-    // }
-
     function testMinimumFiveDollar() public view {
         assertEq(fundMe.MINIMUM_USD(), 5e18);
+    }
+
+    function testIsOwner() public view {
+        // console.log(address(this));
+        // console.log(fundMe.OWNER());
+        // console.log(msg.sender); /* this is not the same with owner of the contract */
+        //  us -> FundMeTest -> FundMe
+        assertEq(address(this), fundMe.OWNER());
     }
 }
