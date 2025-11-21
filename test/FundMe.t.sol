@@ -8,7 +8,7 @@ contract CounterTest is Test {
     FundMe public fundMe;
 
     function setUp() public {
-        fundMe = new FundMe();
+        fundMe = new FundMe(0x694AA1769357215DE4FAC081bf1f309aDC325306);
     }
 
     function testMinimumFiveDollar() public view {
@@ -23,7 +23,7 @@ contract CounterTest is Test {
         assertEq(address(this), fundMe.OWNER());
     }
 
-    function testPriceIsAccurate() public view {
-        assertEq(fundMe.getversion(), 4);
+    function testVersionIsAccurate() public view {
+        assertEq(fundMe.getVersion(), 4);
     }
 }

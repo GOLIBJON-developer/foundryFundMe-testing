@@ -1,19 +1,23 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
-// import {PriceConverter} from "./PriceConverter.sol";
+import {PriceConverter} from "./PriceConverter.sol";
 import {AggregatorV3Interface} from "chainlink-brownie-contracts/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 
 error NotOwner();
 
 contract FundMe {
-    // using PriceConverter for uint256;
-    uint256 public constant MINIMUM_USD = 5 * 1e18;
+    using PriceConverter for uint256;
+
     address[] public funders;
     mapping(address => uint256) public addressToAmountFunded;
-    address public immutable OWNER;
 
-    constructor() {
+    address public immutable OWNER;
+    uint256 public constant MINIMUM_USD = 5 * 1e18;
+    AggregatorV3Interface private s_priceFeed;
+
+    constructor(address priceFeed) {
         OWNER = msg.sender;
+        s_priceFeed = AggregatorV3Interface(priceFeed);
     }
 
     function fund() public payable {
@@ -21,7 +25,8 @@ contract FundMe {
         // Have a minimum $ send
         // 1.How do we send ETH to this contract
         require(
-            getConversionRate(msg.value) >= MINIMUM_USD,
+            msg.value.getConversionRate(AggregatorV3Interface(s_priceFeed)) >=
+                MINIMUM_USD,
             "you didn't send enought ether!"
         );
         funders.push(msg.sender);
@@ -53,33 +58,8 @@ contract FundMe {
         require(callSuccess, "Transaction Failed");
     }
 
-    /**
-     * Network: Sepolia
-     * Aggregator: BTC/USD
-     * Address: 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43     ETH/USD 0x694AA1769357215DE4FAC081bf1f309aDC325306
-     */
-    function getPrice() internal view returns (uint256) {
-        AggregatorV3Interface priceFeed = AggregatorV3Interface(
-            0x694AA1769357215DE4FAC081bf1f309aDC325306
-        );
-        (, int256 answer, , , ) = priceFeed.latestRoundData();
-        // casting to uint256 is safe because chainlink price feed returns positive int256 with 8 decimals
-        // forge-lint: disable-next-line(unsafe-typecast)
-        return uint256(answer) * 1e10;
-    }
-
-    function getConversionRate(
-        uint256 ethAmount
-    ) internal view returns (uint256) {
-        uint256 ethPrice = getPrice();
-        uint256 ethAmountInUsd = (ethPrice * ethAmount) / 1e18;
-        return ethAmountInUsd;
-    }
-
-    function getversion() public view returns (uint256) {
-        return
-            AggregatorV3Interface(0x694AA1769357215DE4FAC081bf1f309aDC325306)
-                .version();
+    function getVersion() public view returns (uint256) {
+        return PriceConverter.getversion(s_priceFeed);
     }
 
     // require(msg.sender==owner,"You're not the owner!");
