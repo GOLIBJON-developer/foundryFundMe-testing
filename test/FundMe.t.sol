@@ -18,8 +18,12 @@ contract CounterTest is Test {
     function testIsOwner() public view {
         // console.log(address(this));
         // console.log(fundMe.OWNER());
-        // console.log(msg.sender); /* this is not the same with owner of the contract */
+        // console.log(msg.sender); /* this is not the same with  owner of the contract */
         //  us -> FundMeTest -> FundMe
         assertEq(address(this), fundMe.OWNER());
+    }
+
+    function testPriceIsAccurate() public view {
+        assertEq(fundMe.getversion(), 4);
     }
 }
