@@ -8,8 +8,8 @@ error NotOwner();
 contract FundMe {
     using PriceConverter for uint256;
 
-    address[] public funders;
-    mapping(address => uint256) public addressToAmountFunded;
+    address[] private s_funders;
+    mapping(address => uint256) private s_addressToAmountFunded;
 
     address public immutable OWNER;
     uint256 public constant MINIMUM_USD = 5 * 1e18;
@@ -29,22 +29,22 @@ contract FundMe {
                 MINIMUM_USD,
             "you didn't send enought ether!"
         );
-        funders.push(msg.sender);
-        addressToAmountFunded[msg.sender] += msg.value;
+        s_funders.push(msg.sender);
+        s_addressToAmountFunded[msg.sender] += msg.value;
     }
 
     function withdraw() public onlyOwner {
         for (
             uint256 funderIndex = 0;
-            funderIndex < funders.length;
+            funderIndex < s_funders.length;
             funderIndex++
         ) {
-            address addressFunder = funders[funderIndex];
-            addressToAmountFunded[addressFunder] = 0;
+            address addressFunder = s_funders[funderIndex];
+            s_addressToAmountFunded[addressFunder] = 0;
             // reset array
             // withdraw the funds
         }
-        funders = new address[](0);
+        s_funders = new address[](0);
 
         // transfer
         // payable(msg.sender).transfer(address(this).balance);
@@ -82,5 +82,15 @@ contract FundMe {
 
     fallback() external payable {
         fund();
+    }
+
+    function getAddressToAmountFunded(
+        address fundingAddress
+    ) public view returns (uint256) {
+        return s_addressToAmountFunded[fundingAddress];
+    }
+
+    function getFunder(uint256 index) public view returns (address) {
+        return s_funders[index];
     }
 }

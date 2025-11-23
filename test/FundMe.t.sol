@@ -8,9 +8,14 @@ import {CounterScript} from "../script/FundMe.s.sol";
 contract CounterTest is Test {
     FundMe public fundMe;
 
+    address USER = makeAddr("user"); //Fake user testing purposes only
+    uint256 constant SEND_VALUE = 0.1 ether;
+    uint256 constant STARTING_BALANCE = 10 ether;
+
     function setUp() public {
         CounterScript deployScript = new CounterScript();
         fundMe = deployScript.run();
+        vm.deal(USER, STARTING_BALANCE);
     }
 
     function testMinimumFiveDollar() public view {
@@ -27,5 +32,18 @@ contract CounterTest is Test {
 
     function testVersionIsAccurate() public view {
         assertEq(fundMe.getVersion(), 4);
+    }
+
+    function testFundFailsWithoutEnoughETH() public {
+        vm.expectRevert();
+        fundMe.fund();
+    }
+
+    function testFundUpdate() public {
+        vm.prank(USER);
+        fundMe.fund{value: SEND_VALUE}();
+
+        uint256 amountFunded = fundMe.getAddressToAmountFunded(USER);
+        assertEq(amountFunded, SEND_VALUE);
     }
 }
