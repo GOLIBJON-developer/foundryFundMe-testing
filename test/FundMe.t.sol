@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
 import {Test, console} from "forge-std/Test.sol";
@@ -27,7 +27,7 @@ contract CounterTest is Test {
         // console.log(fundMe.OWNER());
         // console.log(msg.sender); /* this is not the same with  owner of the contract */
         //  us -> FundMeTest -> FundMe
-        assertEq(msg.sender, fundMe.OWNER());
+        assertEq(msg.sender, fundMe.getOwner());
     }
 
     function testVersionIsAccurate() public view {
@@ -68,5 +68,52 @@ contract CounterTest is Test {
         vm.prank(USER);
         vm.expectRevert();
         fundMe.withdraw();
+    }
+
+    function testWithdrawWithASingleFunder() public funded {
+        //Arrange
+        uint256 startingOwnerBalance = fundMe.getOwner().balance; // owner has some money
+        uint256 startingFundMeBalance = address(fundMe).balance; // contract has some money
+
+        //Acc
+        vm.prank(fundMe.getOwner());
+        fundMe.withdraw(); // owner withdraw all money
+
+        //Assert
+        uint256 endingOwnerBalance = fundMe.getOwner().balance; //now all money in owner balance
+        uint256 endingFundMeBalance = address(fundMe).balance; // 0
+        assertEq(endingFundMeBalance, 0); // true
+        assertEq(
+            startingFundMeBalance + startingOwnerBalance,
+            endingOwnerBalance
+        ); // true
+    }
+
+    function testWithdrawFromMultipleFunders() public funded {
+        //Arrange
+        uint160 numOfFunders = 10; // when working address generating use uint160
+        uint160 startingFunderIndex = 1;
+        for (uint160 i = startingFunderIndex; i < numOfFunders; i++) {
+            // vm.prank new address
+            // vm.deal new address
+            // address()
+            hoax(address(i), SEND_VALUE);
+            fundMe.fund{value: SEND_VALUE}();
+        }
+        uint256 startingOwnerBalance = fundMe.getOwner().balance; // owner has some money
+        uint256 startingFundMeBalance = address(fundMe).balance; // contract has some money
+
+        //Acc
+        // vm.prank(fundMe.getOwner());
+        vm.startPrank(fundMe.getOwner());
+        fundMe.withdraw(); // owner withdraw all money
+        vm.stopPrank();
+
+        //Assert
+        assertEq(address(fundMe).balance, 0);
+        assertEq(
+            startingFundMeBalance + startingOwnerBalance,
+            fundMe.getOwner().balance
+        ); // true
     }
 }

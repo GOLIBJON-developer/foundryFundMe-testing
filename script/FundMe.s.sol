@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
 import {Script} from "forge-std/Script.sol";
@@ -8,7 +8,7 @@ import {HelperConfig} from "./HelperConfig.s.sol";
 contract CounterScript is Script {
     FundMe public fundMe;
 
-    function setUp() public {}
+    // function setUp() public {}
 
     function run() external returns (FundMe) {
         // Before startBroadcast -> Not a real tx
