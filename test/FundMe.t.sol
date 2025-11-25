@@ -8,14 +8,14 @@ import {CounterScript} from "../script/FundMe.s.sol";
 contract CounterTest is Test {
     FundMe public fundMe;
 
-    address USER = makeAddr("user"); //Fake user testing purposes only
+    address USER = makeAddr("user"); //create Fake user testing purposes only
     uint256 constant SEND_VALUE = 0.1 ether;
     uint256 constant STARTING_BALANCE = 10 ether;
 
     function setUp() public {
         CounterScript deployScript = new CounterScript();
         fundMe = deployScript.run();
-        vm.deal(USER, STARTING_BALANCE);
+        vm.deal(USER, STARTING_BALANCE); // adding balance
     }
 
     function testMinimumFiveDollar() public view {
@@ -35,15 +35,32 @@ contract CounterTest is Test {
     }
 
     function testFundFailsWithoutEnoughETH() public {
-        vm.expectRevert();
+        vm.expectRevert(); // reverts next line code, works like if next line code revert or err this test is true
         fundMe.fund();
     }
 
     function testFundUpdate() public {
+        vm.prank(USER); // user came and sending value
+        fundMe.fund{value: SEND_VALUE}();
+
+        uint256 amountFunded = fundMe.getAddressToAmountFunded(USER); //checking the user
+        assertEq(amountFunded, SEND_VALUE); // compares balance of money and user sended value
+    }
+
+    function testAddressFunderToArrayOfFunders() public {
+        vm.prank(USER); // user came and sending value
+        fundMe.fund{value: SEND_VALUE}();
+
+        address funder = fundMe.getFunder(0);
+        assertEq(funder, USER);
+    }
+
+    function testOnlyOwnerCanWithdraw() public {
         vm.prank(USER);
         fundMe.fund{value: SEND_VALUE}();
 
-        uint256 amountFunded = fundMe.getAddressToAmountFunded(USER);
-        assertEq(amountFunded, SEND_VALUE);
+        vm.expectRevert();
+        vm.prank(USER);
+        fundMe.withdraw();
     }
 }
