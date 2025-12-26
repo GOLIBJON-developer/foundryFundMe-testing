@@ -2,8 +2,8 @@
 pragma solidity ^0.8.13;
 
 import {Test, console} from "forge-std/Test.sol";
-import {FundMe} from "../src/FundMe.sol";
-import {CounterScript} from "../script/FundMe.s.sol";
+import {FundMe} from "../../src/FundMe.sol";
+import {CounterScript} from "../../script/FundMe.s.sol";
 
 contract CounterTest is Test {
     FundMe public fundMe;
@@ -92,7 +92,7 @@ contract CounterTest is Test {
         assertEq(
             startingFundMeBalance + startingOwnerBalance,
             endingOwnerBalance
-        ); // true
+        ); // true deal
     }
 
     function testWithdrawFromMultipleFunders() public funded {
